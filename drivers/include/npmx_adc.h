@@ -122,17 +122,6 @@ typedef enum
     NPMX_ADC_DIE_TEMP_MEAS_INTERVAL_INVALID = NPMX_INVALID_ENUM_VALUE,               ///< Invalid interval value.
 } npmx_adc_die_temp_meas_interval_t;
 
-/** @brief Battery charging current. */
-typedef enum
-{
-    NPMX_ADC_IBAT_MEAS_CURRENT_TRICKLE = ADC_ADCIBATMEASSTATUS_BCHARGERICHARGE_TRICKLE, ///< 10% charge (Trickle).
-    NPMX_ADC_IBAT_MEAS_CURRENT_LOWTEMP = ADC_ADCIBATMEASSTATUS_BCHARGERICHARGE_LOWTEMP, ///< 50% charge (Low Temp).
-    NPMX_ADC_IBAT_MEAS_CURRENT_RFU     = ADC_ADCIBATMEASSTATUS_BCHARGERICHARGE_RFU,     ///< 10% charge (default, RFU).
-    NPMX_ADC_IBAT_MEAS_CURRENT_FAST    = ADC_ADCIBATMEASSTATUS_BCHARGERICHARGE_FAST,    ///< 100% charge (Fast).
-    NPMX_ADC_IBAT_MEAS_CURRENT_MAX     = NPMX_ADC_IBAT_MEAS_CURRENT_FAST,               ///< Maximum current value.
-    NPMX_ADC_IBAT_MEAS_CURRENT_INVALID = NPMX_INVALID_ENUM_VALUE,                       ///< Invalid current value.
-} npmx_adc_ibat_meas_current_t;
-
 /** @brief Configuration structure for ADC. */
 typedef struct
 {
@@ -149,8 +138,8 @@ typedef struct
 /** @brief Structure for the battery current measurement status. */
 typedef struct
 {
-    npmx_adc_ibat_meas_current_t charge_current; ///< Charging current type.
-    bool                         charging;       ///< True if battery is being charged, false if battery is discharging.
+    uint8_t charge_current_scale; ///< Charging current scaling, in percent.
+    bool    charging;       ///< True if battery is being charged, false if battery is discharging.
 } npmx_adc_ibat_meas_status_t;
 
 /** @brief Configuration structure for battery NTC thermistor. */
@@ -429,18 +418,6 @@ npmx_error_t npmx_adc_vbat_meas_delay_set(npmx_adc_t const * p_instance, uint8_t
  * @retval NPMX_ERROR_IO Error using IO bus line.
  */
 npmx_error_t npmx_adc_vbat_meas_delay_get(npmx_adc_t const * p_instance, uint8_t * p_delay);
-
-/**
- * @brief Function for getting the battery current measurement status.
- *
- * @param[in]  p_instance         Pointer to the ADC instance.
- * @param[out] p_ibat_meas_status Pointer to the IBAT measurement status structure.
- *
- * @retval NPMX_SUCCESS  Operation performed successfully.
- * @retval NPMX_ERROR_IO Error using IO bus line.
- */
-npmx_error_t npmx_adc_ibat_meas_status_get(npmx_adc_t const            * p_instance,
-                                           npmx_adc_ibat_meas_status_t * p_ibat_meas_status);
 
 /**
  * @brief Function for setting the auto measurement of battery current.
