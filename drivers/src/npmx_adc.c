@@ -299,17 +299,40 @@ static npmx_error_t adc_ibat_meas_status_get(npmx_adc_t const *            p_ins
         return err_code;
     }
 
-    p_ibat_meas_status->charge_current =
-        (npmx_adc_ibat_meas_current_t)((data & ADC_ADCIBATMEASSTATUS_BCHARGERICHARGE_Msk)
-                                       >> ADC_ADCIBATMEASSTATUS_BCHARGERICHARGE_Pos);
+    uint8_t bchargericharge = (data & ADC_ADCIBATMEASSTATUS_BCHARGERICHARGE_Msk)
+                           >> ADC_ADCIBATMEASSTATUS_BCHARGERICHARGE_Pos;
 
-    p_ibat_meas_status->charging = (((data & ADC_ADCIBATMEASSTATUS_BCHARGERMODE_Msk)
-                                     >> ADC_ADCIBATMEASSTATUS_BCHARGERMODE_Pos) ==
-                                    ADC_ADCIBATMEASSTATUS_BCHARGERMODE_CHARGE);
+    switch (bchargericharge)
+    {
+        case 0b00:
+            p_ibat_meas_status->charge_current_scale = 10;
+            break;
+        case 0b01:
+            p_ibat_meas_status->charge_current_scale = 50;
+            break;
+        case 0b11:
+            p_ibat_meas_status->charge_current_scale = 100;
+            break;
+        default:
+            return NPMX_ERROR_INVALID_MEAS;
+    }
 
-    bool invalid_status = (((data & ADC_ADCIBATMEASSTATUS_IBATMEASEINVALID_Msk)
-                            >> ADC_ADCIBATMEASSTATUS_IBATMEASEINVALID_Pos) ==
-                           ADC_ADCIBATMEASSTATUS_IBATMEASEINVALID_INVALID);
+    uint8_t bchargermode = (data & ADC_ADCIBATMEASSTATUS_BCHARGERMODE_Msk)
+                           >> ADC_ADCIBATMEASSTATUS_BCHARGERMODE_Pos;
+
+    switch (bchargermode)
+    {
+        case 0b01:
+            p_ibat_meas_status->charging = false;
+            break;
+        case 0b11:
+            p_ibat_meas_status->charging = true;
+            break;
+        default:
+            return NPMX_ERROR_INVALID_MEAS;
+    }
+
+    bool invalid_status = (data & ADC_ADCIBATMEASSTATUS_IBATMEASEINVALID_Msk) != 0;
 
     return (invalid_status ? NPMX_ERROR_INVALID_MEAS : NPMX_SUCCESS);
 }
@@ -423,6 +446,7 @@ static npmx_error_t code_to_ibat(npmx_adc_t const * p_instance, uint16_t code, i
     if (ibat_meas_status.charging)
     {
         full_scale_ma = (int32_t)(p_instance->p_pmic->charger->charging_current_ma * 1250) / -1000;
+        full_scale_ma = (full_scale_ma * ibat_meas_status.charge_current_scale) / 100;
     }
     else
     {
@@ -1031,15 +1055,6 @@ npmx_error_t npmx_adc_vbat_meas_delay_get(npmx_adc_t const * p_instance, uint8_t
                 >> ADC_ADCDELTIMCONF_VBATDELTIM_Pos);
 
     return NPMX_SUCCESS;
-}
-
-npmx_error_t npmx_adc_ibat_meas_status_get(npmx_adc_t const *            p_instance,
-                                           npmx_adc_ibat_meas_status_t * p_ibat_meas_status)
-{
-    NPMX_ASSERT(p_instance);
-    NPMX_ASSERT(p_ibat_meas_status);
-
-    return adc_ibat_meas_status_get(p_instance, p_ibat_meas_status);
 }
 
 npmx_error_t npmx_adc_ibat_meas_enable_set(npmx_adc_t const * p_instance, bool enable)

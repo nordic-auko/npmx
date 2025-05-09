@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 - 2023, Nordic Semiconductor ASA
+ * Copyright (c) 2025, Nordic Semiconductor ASA
  * All rights reserved.
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -31,15 +31,11 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NPMX_CONFIG_H__
-#define NPMX_CONFIG_H__
+#ifndef NPMX_CONFIG_NPM1304_H__
+#define NPMX_CONFIG_NPM1304_H__
 
-#if defined(NPM1300)
-    #include <npmx_config_npm1300.h>
-#if defined(NPM1304)
-    #include <npmx_config_npm1304.h>
-#else
-    #error "Unknown device."
+#ifndef NPMX_CONFIG_H__
+    #error "This file should not be included directly. Include npmx_config.h instead."
 #endif
 
-#endif // NPMX_CONFIG_H__
+#endif // NPMX_CONFIG_NPM1304_H__
